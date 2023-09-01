@@ -68,8 +68,10 @@ class ButtonsGrid(QGridLayout):
 
     def _configSpecialButton(self, button):
         text = button.text()
+
         if text == 'C':
             self._connectButtonClicked(button, self._clear)
+
         if text in '+-/*^':
             self._connectButtonClicked(
                 button,
@@ -78,6 +80,9 @@ class ButtonsGrid(QGridLayout):
 
         if text in '=':
             self._connectButtonClicked(button, self._eq)
+
+        if text in '◀':
+            self._connectButtonClicked(button, self.display.backspace)
 
     def _makeSlot(self, func, *args, **kwargs):
         @ Slot(bool)
