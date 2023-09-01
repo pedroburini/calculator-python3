@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+import math
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QGridLayout, QPushButton
 from utils import isEmpty, isNumOrDot, isValidNumber
@@ -69,7 +70,7 @@ class ButtonsGrid(QGridLayout):
         text = button.text()
         if text == 'C':
             self._connectButtonClicked(button, self._clear)
-        if text in '+-/*':
+        if text in '+-/*^':
             self._connectButtonClicked(
                 button,
                 self._makeSlot(self._operatorClicked, button)
@@ -102,11 +103,13 @@ class ButtonsGrid(QGridLayout):
         buttonText = button.text()  # +-/* (etc...)
         displayText = self.display.text()  # _left number
         self.display.clear()  # clear display
+
         """ Se a pessoa clicou no operador sem
         configurar qualquer número """
         if not isValidNumber(displayText) and self._left is None:
             print('nothing to add in left value')
             return
+
         """ Se houver algo no número da esquerda,
         não fazemos nada. Aguardaremos o número da direita. """
         if self._left is None:
@@ -123,15 +126,24 @@ class ButtonsGrid(QGridLayout):
             return
 
         self._right = float(displayText)
+
         self.equation = f'{self._left} {self._op} {self._right}'
-        result = 0.0
+        result = 'error'
 
         try:
-            result = eval(self.equation)
+            if '^' in self.equation and isinstance(self._left, float):
+                result = math.pow(self._left, self._right)
+            else:
+                result = eval(self.equation)
         except ZeroDivisionError:
             print('zero division error')
+        except OverflowError:
+            print('overflow error')
 
         self.display.clear()
         self.info.setText(f'{self.equation} = {result}')
         self._left = result
         self._right = None
+
+        if result == 'error':
+            self._left = None
